@@ -76,18 +76,23 @@ public class UserSearchHistoryController : ControllerBase
     }
 
     [HttpGet("mine/cocktails")]
-    public async Task<IActionResult> GetRecentUserCocktails()
+    public async Task<IActionResult> GetRecentUserCocktails([FromQuery] bool unique = false)
     {
         var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (string.IsNullOrEmpty(userId)) return Unauthorized();
         var userGuid = Guid.Parse(userId);
 
-        var recent = await _db.SearchHistories
+        var query = _db.SearchHistories
             .Where(h => h.UserId == userGuid && h.Action == "select")
             .OrderByDescending(h => h.SearchedAt)
             .SelectMany(h => h.Filters)
             .Where(f => f.FilterType == "cocktail")
-            .Select(f => f.FilterName)
+            .Select(f => f.FilterName);
+
+        if (unique)
+            query = query.Distinct();
+
+        var recent = await query
             .Take(10)
             .ToListAsync();
 

@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Microsoft.Extensions.Logging;
 using System.Text;
 using SearchHistoryService.Data;
 using SearchHistoryService.Services;
@@ -81,22 +82,31 @@ builder.Services.AddScoped<SearchHistoryRecorder>();
 
 var app = builder.Build();
 
+// Recupera il logger di Program
+var logger = app.Services.GetRequiredService<ILogger<Program>>();
+
 // 🛎️ AUTO-MIGRATION E CREAZIONE DATABASE
 using (var scope = app.Services.CreateScope())
 {
-    var db   = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    int max  = 10;
-    for (int attempt = 1; attempt <= max; attempt++)
+    var db     = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    var logCtx = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    const int maxAttempts = 10;
+
+    for (int attempt = 1; attempt <= maxAttempts; attempt++)
     {
         try
         {
             db.Database.Migrate();
-            Console.WriteLine("✅ Migration completata.");
+            logCtx.LogInformation("[SearchHistoryService] ✅ Migration completata.");
             break;
         }
-        catch when (attempt < max)
+        catch when (attempt < maxAttempts)
         {
-            Console.WriteLine($"⏳ DB non pronto… ritento ({attempt}/{max})");
+            logCtx.LogWarning(
+                "[SearchHistoryService] ⏳ DB non pronto… ritento ({Attempt}/{MaxAttempts})",
+                attempt,
+                maxAttempts
+            );
             Thread.Sleep(2000);
         }
     }
@@ -115,5 +125,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
-Console.WriteLine("🕵️‍♂️ SearchHistoryService avviato.");
+// 🟢 Avvio del service
+logger.LogInformation("[SearchHistoryService] 🕵️‍♂️ Service avviato.");
+
 app.Run();
