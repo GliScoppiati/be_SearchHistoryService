@@ -62,10 +62,10 @@ public class UserSearchHistoryController : ControllerBase
 
         var result = histories.Select(h => new SearchHistoryDto
         {
-            Id         = h.Id,
+            Id = h.Id,
             SearchedAt = h.SearchedAt,
-            Action     = h.Action,
-            Filters    = h.Filters.Select(f => new FilterDto
+            Action = h.Action,
+            Filters = h.Filters.Select(f => new FilterDto
             {
                 FilterType = f.FilterType,
                 FilterName = f.FilterName

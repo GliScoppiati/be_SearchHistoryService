@@ -24,10 +24,10 @@ builder.Services.AddSwaggerGen(c =>
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Description = "JWT Bearer token",
-        Name        = "Authorization",
-        In          = ParameterLocation.Header,
-        Type        = SecuritySchemeType.ApiKey,
-        Scheme      = "Bearer"
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer"
     });
     c.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
@@ -48,22 +48,22 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 // 📌 JWT Authentication
 var jwtSection = builder.Configuration.GetSection("Jwt");
-var keyBytes   = Encoding.ASCII.GetBytes(jwtSection["Key"]!);
+var keyBytes = Encoding.ASCII.GetBytes(jwtSection["Key"]!);
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
         options.RequireHttpsMetadata = false;
-        options.SaveToken            = true;
+        options.SaveToken = true;
         options.TokenValidationParameters = new TokenValidationParameters
         {
-            ValidateIssuer           = true,
-            ValidateAudience         = true,
-            ValidateLifetime         = true,
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer              = jwtSection["Issuer"],
-            ValidAudience            = jwtSection["Audience"],
-            IssuerSigningKey         = new SymmetricSecurityKey(keyBytes)
+            ValidIssuer = jwtSection["Issuer"],
+            ValidAudience = jwtSection["Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(keyBytes)
         };
     });
 
@@ -88,7 +88,7 @@ var logger = app.Services.GetRequiredService<ILogger<Program>>();
 // 🛎️ AUTO-MIGRATION E CREAZIONE DATABASE
 using (var scope = app.Services.CreateScope())
 {
-    var db     = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     var logCtx = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
     const int maxAttempts = 10;
 
